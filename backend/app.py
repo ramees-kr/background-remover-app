@@ -1,7 +1,6 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, send_from_directory
 from rembg import remove
 from PIL import Image
-import io
 import os
 import uuid
 
@@ -10,27 +9,30 @@ UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-@app.route('/remove_background', methods=['POST'])
-def remove_background():
-    if 'image' not in request.files:
-        return jsonify({'error': 'No image part'}), 400
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    processed_image_url = None
+    if request.method == 'POST':
+        if 'image' not in request.files:
+            return "No image part"
 
-    image_file = request.files['image']
-    if image_file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
+        image_file = request.files['image']
+        if image_file.filename == '':
+            return "No selected file"
 
-    try:
-        image = Image.open(image_file)
-        output = remove(image)
+        try:
+            image = Image.open(image_file)
+            output = remove(image)
 
-        # Save the processed image
-        unique_filename = str(uuid.uuid4()) + '.png' 
-        output_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-        output.save(output_path)
+            unique_filename = str(uuid.uuid4()) + '.png'
+            output_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+            output.save(output_path)
 
-        return jsonify({'processed_image_url': f'/uploads/{unique_filename}'}), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+            processed_image_url = f'/uploads/{unique_filename}'
+        except Exception as e:
+            return f"An error occurred: {str(e)}"
+
+    return render_template('index.html', processed_image_url=processed_image_url)
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
