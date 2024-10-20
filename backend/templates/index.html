@@ -10,11 +10,15 @@
     <title>Image Background Remover</title>
   </head>
   <body>
+
     <div class="hero">
+      <h1>Background Remover</h1>
       <!-- Image Upload Section -->
       <label for="input-file" id="drop-area">
+
         <input type="file" accept="image/*" id="input-file" hidden />
         <div id="img-view">
+
           <img
             src="{{ url_for('static', filename='upload.png') }}"
             alt="Upload Icon"
@@ -24,11 +28,6 @@
         </div>
       </label>
 
-      <!-- Processed Image Display Section -->
-      <div id="img-view-output">
-        <p>Processed Image will appear here</p>
-      </div>
-    </div>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
     <!-- Link script.js here -->
   </body>

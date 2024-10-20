@@ -23,10 +23,11 @@ function uploadImage() {
     .then((response) => response.json())
     .then((data) => {
       if (data.processed_image_url) {
-        // Display the processed image in the img-view-output area
-        imageViewOutput.style.backgroundImage = `url(${data.processed_image_url})`;
-        imageViewOutput.textContent = "";
-        imageViewOutput.style.border = "0";
+        imageView.style.backgroundImage = `url(${data.processed_image_url})`;
+        console.log(
+          "Inside JS => data.processed_image_url: " +
+            `url(${data.processed_image_url})`
+        );
       }
     })
     .catch((error) => console.error("Error:", error));
