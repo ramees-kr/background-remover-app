@@ -1,42 +1,52 @@
-from flask import Flask, render_template, request, send_from_directory
-from rembg import remove
-from PIL import Image
+from flask import Flask, render_template, request, jsonify, send_file, url_for
 import os
 import uuid
+from rembg import remove  # Using rmbg to remove the background from images
 
 app = Flask(__name__)
+
 UPLOAD_FOLDER = 'uploads'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+PROCESSED_FOLDER = 'processed'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(PROCESSED_FOLDER, exist_ok=True)
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
 def index():
-    processed_image_url = None
-    if request.method == 'POST':
-        if 'image' not in request.files:
-            return "No image part"
+    return render_template('index.html')
 
-        image_file = request.files['image']
-        if image_file.filename == '':
-            return "No selected file"
+@app.route('/process-image', methods=['POST'])
+def process_image():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+    
+    file = request.files['file']
+    
+    # Generate a unique filename using uuid
+    input_filename = f"{uuid.uuid4()}.png"
+    input_filepath = os.path.join(UPLOAD_FOLDER, input_filename)
+    
+    # Save the uploaded image to the uploads folder
+    file.save(input_filepath)
+    
+    # Process the image to remove the background
+    with open(input_filepath, 'rb') as input_image:
+        output_data = remove(input_image.read())  # Remove background using rmbg
 
-        try:
-            image = Image.open(image_file)
-            output = remove(image)
+    # Save the processed image to the processed folder
+    output_filename = f"processed_{input_filename}"
+    output_filepath = os.path.join(PROCESSED_FOLDER, output_filename)
+    
+    with open(output_filepath, 'wb') as output_image:
+        output_image.write(output_data)
+    
+    # Return the URL of the processed image to the frontend
+    processed_image_url = url_for('get_processed_image', filename=output_filename)
+    return jsonify({"processed_image_url": processed_image_url})
 
-            unique_filename = str(uuid.uuid4()) + '.png'
-            output_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-            output.save(output_path)
+@app.route('/processed/<filename>')
+def get_processed_image(filename):
+    return send_file(os.path.join(PROCESSED_FOLDER, filename))
 
-            processed_image_url = f'/uploads/{unique_filename}'
-        except Exception as e:
-            return f"An error occurred: {str(e)}"
-
-    return render_template('index.html', processed_image_url=processed_image_url)
-
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+if __name__ == "__main__":
+    app.run(debug=True)
+    #app.run(debug=True, host='0.0.0.0')

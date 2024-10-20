@@ -1,17 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <title>Background Remover</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+    <title>Image Background Remover</title>
   </head>
   <body>
-    <h1>Remove Image Background</h1>
-    <form method="POST" enctype="multipart/form-data">
-      <input type="file" name="image" />
-      <button type="submit">Remove Background</button>
-    </form>
+    <div class="hero">
+      <!-- Image Upload Section -->
+      <label for="input-file" id="drop-area">
+        <input type="file" accept="image/*" id="input-file" hidden />
+        <div id="img-view">
+          <img
+            src="{{ url_for('static', filename='upload.png') }}"
+            alt="Upload Icon"
+          />
+          <p>Drag & drop or Click here<br />to upload image</p>
+          <span>Upload images from your device</span>
+        </div>
+      </label>
 
-    {% if processed_image_url %}
-    <img src="{{ processed_image_url }}" alt="Processed Image" />
-    {% endif %}
+      <!-- Processed Image Display Section -->
+      <div id="img-view-output">
+        <p>Processed Image will appear here</p>
+      </div>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <!-- Link script.js here -->
   </body>
 </html>
