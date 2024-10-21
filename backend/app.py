@@ -28,7 +28,6 @@ def clear_folder(folder):
             print(f"Failed to delete {file_path}. Reason: {e}")
 
 clear_folder(UPLOAD_FOLDER)
-clear_folder(PROCESSED_FOLDER)
 
 @app.route('/process-image', methods=['POST'])
 def process_image():
@@ -37,6 +36,8 @@ def process_image():
     
     file = request.files['file']
     
+    clear_folder(PROCESSED_FOLDER)
+
     # Generate a unique filename using uuid
     input_filename = f"{uuid.uuid4()}.png"
     input_filepath = os.path.join(UPLOAD_FOLDER, input_filename)
@@ -60,11 +61,13 @@ def process_image():
     # Return the URL of the processed image to the frontend
     processed_image_url = url_for('get_processed_image', filename=output_filename)
     print("Inside process_image: Processed image URL = " + processed_image_url)
+    clear_folder(UPLOAD_FOLDER)
     return jsonify({"processed_image_url": processed_image_url})
+    
 
 @app.route('/processed/<filename>')
 def get_processed_image(filename):
     return send_file(os.path.join(PROCESSED_FOLDER, filename))
 
-if __name__ == "__main__":
-    app.run(debug=True)
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0')
