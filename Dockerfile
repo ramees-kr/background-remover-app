@@ -1,7 +1,16 @@
 FROM python:3.9
 
-COPY u2net.onnx /home/.u2net/u2net.onnx 
-COPY u2netp.onnx /root/.u2net/u2net.onnx
+# Install wget for downloading files
+RUN apt-get update && apt-get install -y wget
+
+# Set up the necessary directories
+RUN mkdir -p /root/.u2net
+
+# Download the u2net.onnx and u2netp.onnx model files
+RUN wget -O /root/.u2net/u2net.onnx 'https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2net.onnx'
+
+#COPY u2net.onnx /home/.u2net/u2net.onnx 
+#COPY u2netp.onnx /root/.u2net/u2net.onnx
 
 WORKDIR /app
 
